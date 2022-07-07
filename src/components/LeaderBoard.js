@@ -15,6 +15,9 @@ export class LeaderBoard extends React.Component {
   static propTypes = {
     items: PropTypes.array,
     selectionHandler: PropTypes.func,
+    // loadMoreHandler: PropTypes.func,
+    loadingState: PropTypes.object,
+    onLoadMore: PropTypes.object,
   }
 
   getCellRenderer = ((item, columnKey) => {
@@ -111,6 +114,8 @@ export class LeaderBoard extends React.Component {
           selectionMode="single" 
           selectionStyle="highlight"
           onSelectionChange={this?.props?.selectionHandler}
+          loadingState={this.props?.loadingState}
+          onLoadMore={this?.props?.onLoadMore}
         >
           <TableHeader columns={columns}>
             {column => (

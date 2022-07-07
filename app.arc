@@ -1,5 +1,11 @@
 @app
-begin-app
+edh-salt-index
+
+@aws
+# profile default
+region us-west-2
+runtime nodejs16.x
+architecture arm64
 
 @http
 /api/import
@@ -11,9 +17,6 @@ begin-app
 /api/leaderboard
 	method get
 	src /api/leaderboard
-/api/flush
-	method get
-	src /api/flush
 /api/persist
 	method post
 	src /api/persist
@@ -22,15 +25,18 @@ begin-app
 folder build
 spa true
 
-@aws
-runtime nodejs16.x
-
 @tables
-data 
-	scopeID *String
-	dataID **String
-	ttl TTL
+data
+	category *String
+	id **String
 
-decks
-	scopeID *String
+@tables-indexes
+data
+	category *String
 	salt **Number
+	name bySalt
+
+data
+	category *String
+	id *String
+	name byId

@@ -6,6 +6,7 @@ import { Flex, View, Header, Divider, Text } from "@adobe/react-spectrum";
 // import styles from './MainView.css';
 import { LeaderBoard } from './LeaderBoard';
 import { ParseProgressIndicator } from './ParseProgressIndicator';
+import {useAsyncList} from '@react-stately/data';
 
 export class MainView extends React.Component {
 
@@ -34,7 +35,7 @@ export class MainView extends React.Component {
         const results = await (await fetch(`/api/leaderboard`)).json();
         const data = [];
         
-        const decks = results;
+        const decks = results.items;
         for (let i = 0; i < decks?.length; i++) {
           const item = decks[i];
             data.push({
@@ -154,7 +155,46 @@ export class MainView extends React.Component {
         
     }
 
+    onLoadMore = (evn) => {
+        console.log(`DKLJFKSDFJ`);
+    }
+
+    // renderGridView() {
+    //     list = useAsyncList({
+    //         async load({ signal, cursor }) {
+    //         //   let res = await fetch('https://pokeapi.co/api/v2/pokemon', {signal});
+    //         //   let json = await res.json();
+    //         //   return {items: json.results};
+    
+    //           const results = await (await fetch(`/api/leaderboard`)).json();
+    //           const data = [];
+              
+    //           const decks = results.items;
+    //           for (let i = 0; i < decks?.length; i++) {
+    //             const item = decks[i];
+    //               data.push({
+    //               ...item,
+    //             })
+    //           };
+    
+    //           return {items: data, cursor: `sdlkfjsdkfsdf` };
+          
+    //         //   this.setState({ listItems: data });
+    //         }
+    //       });
+
+
+    //     return (
+    //         <LeaderBoard 
+    //                         items={list.items}
+    //                         loadingState={list.loadingState}
+    //                         onLoadMore={list.loadMore}
+    //                         selectionHandler={this.handleLeaderboardSelectionChange}  />
+    //     )
+    // }
+
     render() {
+        
         const progressLabel = this?.state?.progressStatus?.label || '';
         const progressValue = this?.state?.progressStatus?.percentage || 0;
         const isFetching = this?.state?.isFetching || false;
@@ -199,10 +239,19 @@ export class MainView extends React.Component {
                             ? <Preview deck={selectedDeck} />
                             : <div style={{height: "100px"}} />
                         } */}
-                        
+
                         <LeaderBoard 
                             items={items}
-                            selectionHandler={this.handleLeaderboardSelectionChange} />
+                            loadingState={true}
+                            // loadingState={list.loadingState}
+                            // onLoadMore={list.loadMore}
+                            selectionHandler={this.handleLeaderboardSelectionChange}  />
+                        
+                        {/* <LeaderBoard 
+                            items={list.items}
+                            loadingState={list.loadingState}
+                            onLoadMore={list.loadMore}
+                            selectionHandler={this.handleLeaderboardSelectionChange}  /> */}
                     </Flex>
                 </View>
             </View>

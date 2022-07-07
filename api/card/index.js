@@ -1,31 +1,45 @@
 const fetch = require('node-fetch');
-const data = require('@begin/data')
-const begin = require('@architect/functions') // Reads & writes session data
+const arc = require('@architect/functions')
+const AWS = require("aws-sdk")
+
 
 const prettyPrintJSON = (json) => {
   console.log(`json value: \n${JSON.stringify(json, null, 4)}`);
 }
 
+function fart (data) {
+  console.log(`GOT sfs :: `);
+  prettyPrintJSON(data);
+}
+
+
 const getEdhrecCardEntry = async (cardname = '') => {
   let cached = null;
+  let tables = await arc.tables();
+  const category = `cards`;
 
   try {
-    cached = await data.get({
-      table: 'cards',
-      key: cardname
-    });
-  } catch(error) {
-    // do nothing
+    const queryParams = {
+      KeyConditionExpression: 'category = :category AND id = :id',
+      ExpressionAttributeValues: {
+        ':category': category,
+        ':id': cardname,
+      }
+    }
+    
+    const response = await tables.data.query(queryParams);
+    
+    cached = response.Items[0];
+  } catch (error) {
+    console.log(`UNABLE TO GET DATA : ${error}`);
   }
 
-  
-  // prettyPrintJSON(cached);
-
-  if (!cached?.data?.salt) {
+  if (!cached?.salt) {
+    console.log(`NOT CACHED :: ${cardname}`);
     const requestOptions = {
       'method': 'GET',
       'hostname': 'cards.edhrec.com',
-      'path': '/thassas-oracle',
+      'path': `/${cardname}`,
       'headers': {
       },
       'maxRedirects': 20
@@ -36,32 +50,34 @@ const getEdhrecCardEntry = async (cardname = '') => {
     const json = JSON.parse(text);
 
     try {
-      await data.set({
-        table: 'cards',
-        key: cardname,
-        data: { salt: json.salt },
+      return await tables.data.put({
+        category: 'cards',
+        id: cardname,
+        salt: json.salt,
+        name: json.name,
       })
     } catch(error) {
       // do nothing
+      console.log(`UNABLE TO SET DATA : ${error}`);
     }
-  
-    return json;
   }
   
   return {
-    salt: cached.data.salt,
+    ...cached,
   }
   
 }
 
 exports.handler = async function http (requestObject) {
   const cardname = requestObject?.queryStringParameters?.card;
-  console.log(`card api hit with cardname: ${cardname}`);
-
+  
   if (cardname?.length > 0) {
     const sanitizedCardName = cardname?.toLowerCase()
         .replace(/,|'/g, '')
-        .replace(/ /g, '-');
+        .replace(/ /g, '-')
+        .replace(/-\/\/.*/g, '');
+
+    // console.log(`sanitized card name: ${sanitizedCardName}`);
 
     const card = await getEdhrecCardEntry(sanitizedCardName);
 

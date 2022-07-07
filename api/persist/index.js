@@ -1,13 +1,4 @@
-const data = require('@begin/data')
 const CryptoJS = require('crypto-js');
-const dynamo = require('@begin/data/src/helpers/_dynamo').doc
-let getTableName = require('@begin/data/src/helpers/_get-table-name')
-let getKey = require('@begin/data/src/helpers/_get-key')
-let createKey = require('@begin/data/src/helpers/_create-key')
-let waterfall = require('run-waterfall')
-let validate = require('@begin/data/src/helpers/_validate')
-let unfmt = require('@begin/data/src/helpers/_unfmt')
-let fmt = require('@begin/data/src/helpers/_fmt')
 
 let arc = require('@architect/functions')
 let parseBody = arc.http.helpers.bodyParser
@@ -17,21 +8,6 @@ const prettyPrintJSON = (json) => {
 }
 
 
-function maybeCreateKey (params, callback) {
-  if (params.key) {
-    callback(null, fmt(params))
-  }
-  else {
-    createKey(params.table, function _createKey (err, key) {
-      if (err) callback(err)
-      else {
-        params.key = key
-        callback(null, fmt(params))
-      }
-    })
-  }
-}
-
 const persistDeckList = async (body) => {
   console.log(`MD5 HASH => ${CryptoJS.MD5(body?.url)}`);
   const id = `${CryptoJS.MD5(body?.url)}`;
@@ -39,8 +15,10 @@ const persistDeckList = async (body) => {
 
   console.log(`persisting data for decklist ${body.url}; slug: ${urlSlug}`);
   
-  let deckData = {
+  const deckData = {
+    category: 'decks',
     id,
+    salt: body.salt,
     data: { 
       ...body, 
       dateLastIndexed: ``,
@@ -51,59 +29,16 @@ const persistDeckList = async (body) => {
   deckData.data.commanders = deckData.data.commanders.toString();
 
   try {
-    let callback;
-    let params = {
-      table: 'decks_v3'
-    };
-    let Item = deckData;
-
-    waterfall([
-      function getKey (callback) {
-        maybeCreateKey(params, callback)
-      },
-      function getTable (Item, callback) {
-        getTableName(function done (err, TableName) {
-          const tableName = TableName.substring(0, TableName.lastIndexOf(`data`));
-          if (err) callback(err)
-          else callback(null, `${tableName}decks`, Item)
-        })
-      },
-      function _dynamo (TableName, Item, callback) {
-        dynamo(function done (err, doc) {
-          if (err) callback(err)
-          else callback(null, TableName, Item, doc)
-        })
-      },
-      function write (TableName, Item, doc, callback) {
-        validate.size(Item)
-        Item = {
-          table: 'decks_v3',
-          key: id,
-          ...deckData.data,
-        };
-        console.log(`[SET] TableName ${TableName}`)
-        console.log(`[SET] Item ${JSON.stringify(Item)}`)
-        doc.put({
-          TableName,
-          Item
-        },
-        function done (err) {
-          if (err) callback(err)
-          else callback(null, unfmt(Item))
-        })
-      }
-    ], callback)
-
-    // await data.set({
-    //   table: 'decks_v3',
-    //   key: id,
-    //   ...deckData.data,
-    // })
-  } catch (error) {
-    console.log(`[ERROR] ${error}`)
+    let tables = await arc.tables()
+    console.log(`...persisting`);
+    prettyPrintJSON(deckData);
+    return await tables.data.put({
+      ...deckData,
+    })
+  } catch(error) {
+    // do nothing
+    console.log(`UNABLE TO SET DATA : ${error}`);
   }
-
-  return deckData;
 }
 
 exports.handler = async function http (requestObject) {
