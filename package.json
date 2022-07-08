@@ -8,24 +8,29 @@
     "@adobe/react-spectrum": "^3.18.0",
     "@architect/functions": "^5.1.0",
     "@architect/utils": "^3.1.2",
+    "autoprefixer": "^10.4.7",
     "aws-sdk": "^2.1167.0",
+    "core-js": "^2.6.5",
+    "cross-env": "^6.0.3",
     "crypto-js": "^4.1.1",
+    "css-loader": "3.0.0",
+    "eslint-loader": "^4.0.2",
     "node-fetch": "^2.6.7",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-redux": "^8.0.2",
-    "react-scripts": "^4.0.3",
-    "run-waterfall": "^1.1.7"
+    "run-waterfall": "^1.1.7",
+    "webpack": "^4.24.0",
+    "webpack-cli": "^3.1.2"
   },
   "scripts": {
-    "start": "run-p start:react api",
-    "start:react": "react-scripts start",
-    "build": "react-scripts build",
-    "test:i": "react-scripts test",
-    "eject": "react-scripts eject",
+    "build": "cross-env NODE_ENV=production webpack --mode production",
+    "start": "cross-env NODE_ENV=dev webpack-dev-server --mode development --open --hot --compress",
     "api": "cross-env NODE_ENV=testing ARC_LOCAL=1 npx sandbox",
     "test": "cross-env NODE_ENV=testing PORT=6666 tape test/**/*-test.js test/*-test.js | tap-spec",
-    "serve": "run-s build api"
+    "serve": "run-s build api",
+    "dev": "webpack-cli serve --mode development",
+    "watch": "webpack --watch"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -35,15 +40,41 @@
     "not dead",
     "not op_mini all"
   ],
-  "overrides": {
-    "postcss-custom-properties": "^12"
-  },
   "devDependencies": {
     "@architect/sandbox": "^5.2.4",
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.0.0",
+    "@babel/node": "^7.8.7",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-decorators": "^7.4.4",
+    "@babel/plugin-proposal-export-default-from": "^7.0.0",
+    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0",
+    "@babel/plugin-transform-regenerator": "^7.4.5",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/runtime": "^7.4.5",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^23.4.2",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-dynamic-import-node": "^2.2.0",
+    "babel-plugin-dynamic-import-override": "^1.1.2",
+    "babel-plugin-inline-import": "^3.0.0",
+    "babel-preset-react": "^6.24.1",
+    "copy-webpack-plugin": "^5.1.1",
     "cross-env": "^7.0.3",
+    "html-webpack-plugin": "^3.2.0",
     "npm-run-all": "^4.1.5",
+    "sass-loader": "^7.0.3",
+    "source-map-loader": "^1.1.2",
+    "style-loader": "^0.23.1",
     "tap-spec": "^5.0.0",
     "tape": "^5.5.3",
-    "tiny-json-http": "^7.4.2"
+    "tiny-json-http": "^7.4.2",
+    "webpack-dev-server": "^3.1.14"
   }
 }
