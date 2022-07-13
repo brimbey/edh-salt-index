@@ -1,0 +1,4 @@
+public/
+build/
+.vscode/
+node_modules/

@@ -1,12 +1,14 @@
 import React from 'react';
-import { SubmitForm } from "./SubmitForm";
-import { Aggregator } from "../aggregator/Aggregator";
-import { Preview } from "./Preview";
+import { SubmitForm } from "../submitform/SubmitForm";
+import { Aggregator } from "../../aggregator/Aggregator";
+import { Preview } from "../preview/Preview";
 import { Flex, View, Header, Divider, Text } from "@adobe/react-spectrum";
 // import styles from './MainView.css';
-import { LeaderBoard } from './LeaderBoard';
-import { ParseProgressIndicator } from './ParseProgressIndicator';
+import { LeaderBoard } from '../leaderboard/LeaderBoard';
+import { ParseProgressIndicator } from '../progressindicator/ParseProgressIndicator';
 import {useAsyncList} from '@react-stately/data';
+import { DynamoConnector } from '../../data/DynamoConnector';
+import { useSelector, useDispatch } from 'react-redux'
 
 export class MainView extends React.Component {
 
@@ -32,18 +34,18 @@ export class MainView extends React.Component {
     }
 
     refreshGridList = async () => {
-        const results = await (await fetch(`/api/leaderboard`)).json();
-        const data = [];
         
-        const decks = results.items;
-        for (let i = 0; i < decks?.length; i++) {
-          const item = decks[i];
-            data.push({
-            ...item,
-          })
-        };
+
+        // const decks = await DynamoConnector.getLeaderboard();
+
+        // for (let i = 0; i < decks?.length; i++) {
+        //   const item = decks[i];
+        //     data.push({
+        //     ...item,
+        //   })
+        // };
     
-        this.setState({ listItems: data });
+        // this.setState({ listItems: decks });
       }
 
     getUrlParam = () => {
@@ -67,70 +69,71 @@ export class MainView extends React.Component {
     }
 
     handleListSubmit = async (value) => {
-        try {
-            this.setState({isFetching: true});
+        this.props.importDeckList(value);
+        // try {
+        //     this.setState({isFetching: true});
 
-            this.setState({
-                progressStatus: {
-                    label: `Getting deck list...`,
-                    percentage: 0,
-                }
-            })
+        //     this.setState({
+        //         progressStatus: {
+        //             label: `Getting deck list...`,
+        //             percentage: 0,
+        //         }
+        //     })
             
-            const aggregator = new Aggregator();
-            let data = await (await fetch(`/api/import?url=${value}`)).json()
-            const commanders = Object.keys(data?.deck?.commanders);
+        //     const aggregator = new Aggregator();
+        //     let data = await (await fetch(`/api/import?url=${value}`)).json()
+        //     const commanders = Object.keys(data?.deck?.commanders);
 
-            this.setState({
-                deckDisplayData: {
-                    commanders,
-                    author: data?.deck?.author?.userName,
-                    authorAvatarUrl: data?.deck?.author?.profileImageUrl,
-                    title: data?.deck?.name,
-                }   
-            });
+        //     this.setState({
+        //         deckDisplayData: {
+        //             commanders,
+        //             author: data?.deck?.author?.userName,
+        //             authorAvatarUrl: data?.deck?.author?.profileImageUrl,
+        //             title: data?.deck?.name,
+        //         }   
+        //     });
 
-            const total = await aggregator.parseDeckList(data?.deck?.cards, this.handleAggregatorStatusUpdate);
+        //     const total = await aggregator.parseDeckList(data?.deck?.cards, this.handleAggregatorStatusUpdate);
 
-            this.setState({isFetching: false});
+        //     this.setState({isFetching: false});
 
-            const response = await fetch(`/api/persist`, {
-                method: "POST",
-                body: JSON.stringify({
-                    url: data?.deck?.url,
-                    author: data?.deck?.author?.userName,
-                    authorAvatarUrl: data?.deck?.author?.profileImageUrl,
-                    commanders,
-                    title: data?.deck?.name,
-                    salt: total,
-                    source: `moxfield`,
-                    authorProfileUrl: `https://www.moxfield.com/users/${data?.deck?.author?.userName}`,
-                })
-            });
+        //     const response = await fetch(`/api/persist`, {
+        //         method: "POST",
+        //         body: JSON.stringify({
+        //             url: data?.deck?.url,
+        //             author: data?.deck?.author?.userName,
+        //             authorAvatarUrl: data?.deck?.author?.profileImageUrl,
+        //             commanders,
+        //             title: data?.deck?.name,
+        //             salt: total,
+        //             source: `moxfield`,
+        //             authorProfileUrl: `https://www.moxfield.com/users/${data?.deck?.author?.userName}`,
+        //         })
+        //     });
 
-            this.setState({
-                progressStatus: {
-                    label: ``,
-                    percentage: 0,
-                }
-            })
+        //     this.setState({
+        //         progressStatus: {
+        //             label: ``,
+        //             percentage: 0,
+        //         }
+        //     })
 
-            await this.refreshGridList();
+        //     await this.refreshGridList();
             
-            const newDeckJson = await response.json();
-            this.handleLeaderboardSelectionChange({ currentKey: newDeckJson?.id });
-        } catch (error) {
-            console.log(error);
-        }
+        //     const newDeckJson = await response.json();
+        //     this.handleLeaderboardSelectionChange({ currentKey: newDeckJson?.id });
+        // } catch (error) {
+        //     console.log(error);
+        // }
     };
 
     componentDidMount = async () => {
-        await this.refreshGridList();
+        // const currentKey = this.getUrlParam();
+        // if (currentKey) {
+        //    this.handleLeaderboardSelectionChange({ currentKey }) 
+        // }
 
-        const currentKey = this.getUrlParam();
-        if (currentKey) {
-           this.handleLeaderboardSelectionChange({ currentKey }) 
-        }
+        this.props.refreshLeaderboard();
     }
 
     handlePreviewDialogDismiss = (evn) => {
@@ -153,6 +156,11 @@ export class MainView extends React.Component {
         
         this.setState({ selectedDeck: null });
         
+    }
+
+    handleRefreshSelectedDeck = (evn) => {
+        console.log(`DECK :: ${JSON.stringify(this?.state?.deck)}`);
+        this.handleListSubmit(this?.state?.selectedDeck?.url);
     }
 
     onLoadMore = (evn) => {
@@ -198,8 +206,13 @@ export class MainView extends React.Component {
         const progressLabel = this?.state?.progressStatus?.label || '';
         const progressValue = this?.state?.progressStatus?.percentage || 0;
         const isFetching = this?.state?.isFetching || false;
-        const items = this?.state?.listItems || [];
-        const selectedDeck = this?.state?.selectedDeck || null;
+        // const items = useSelector((state) => state.leaderboard.decks); //this?.state?.listItems || [];
+        const items = [];
+        const selectedDeck = null;
+        // const selectedDeck = this?.state?.selectedDeck || null;
+
+        // const dispatch = useDispatch()
+        // dispatch(fetch);
         
         // const param = this.getUrlParam();
         
@@ -211,7 +224,7 @@ export class MainView extends React.Component {
                     </Header>
                     <Divider size="M" />
                 </View>
-                <div style={{height: "100px"}} />
+                <div style={{height: "25px"}} />
                 <View alignItems="center" height="100%">
                     <Flex 
                         direction="column"  
@@ -231,7 +244,7 @@ export class MainView extends React.Component {
                         </Flex>
                         <div style={{height: "50px"}} />
                         {selectedDeck 
-                            ? <Preview deck={selectedDeck} onDismiss={this.handlePreviewDialogDismiss} />  
+                            ? <Preview deck={selectedDeck} onDismiss={this.handlePreviewDialogDismiss} onRefresh={this.handleRefreshSelectedDeck} />  
                             : <div style={{height: "0px"}} />
                         }
                         
@@ -253,6 +266,13 @@ export class MainView extends React.Component {
                             onLoadMore={list.loadMore}
                             selectionHandler={this.handleLeaderboardSelectionChange}  /> */}
                     </Flex>
+                </View>
+                <div style={{height: "25px"}} />
+                <View style={{position: 'absolute', bottom: -100}}>
+                    <Divider size="M" />
+                    <Header>
+                        <Text size="L">Total salt miners: </Text>
+                    </Header>
                 </View>
             </View>
         )

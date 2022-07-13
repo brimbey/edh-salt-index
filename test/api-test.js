@@ -1,18 +1,19 @@
-let test = require('tape')
-let tiny = require('tiny-json-http')
-let sandbox = require('@architect/sandbox')
-let base = 'http://localhost:6666'
+const test = require('tape');
+const tiny = require('tiny-json-http');
+const sandbox = require('@architect/sandbox');
 
-test('Set up env', t => {
-  t.plan(1)
-  t.ok(sandbox, 'sandbox loaded')
-})
+const base = 'http://localhost:6666';
 
-test('Start the Sandbox', async t => {
-  t.plan(1)
-  let result = await sandbox.start()
-  t.equal(result, 'Sandbox successfully started')
-})
+test('Set up env', (t) => {
+  t.plan(1);
+  t.ok(sandbox, 'sandbox loaded');
+});
+
+test('Start the Sandbox', async (t) => {
+  t.plan(1);
+  const result = await sandbox.start();
+  t.equal(result, 'Sandbox successfully started');
+});
 
 // test('get /api', async t => {
 //   t.plan(2)
@@ -30,8 +31,8 @@ test('Start the Sandbox', async t => {
 
 // })
 
-test('End', async t => {
-  t.plan(1)
-  let result = await sandbox.end()
-  t.equal(result, 'Sandbox successfully shut down')
-})
+test('End', async (t) => {
+  t.plan(1);
+  const result = await sandbox.end();
+  t.equal(result, 'Sandbox successfully shut down');
+});

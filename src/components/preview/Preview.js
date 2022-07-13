@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import './Preview.css';
 import LinkOut from '@spectrum-icons/workflow/LinkOut';
 import Close from '@spectrum-icons/workflow/Close';
+import Refresh from '@spectrum-icons/workflow/Refresh';
 
 
 export class Preview extends React.Component {
@@ -11,15 +12,14 @@ export class Preview extends React.Component {
     static propTypes = {
         deck: PropTypes.object,
         onDismiss: PropTypes.func,
+        onRefresh: PropTypes.func,
       }
 
       handleAuthorLinkPress = (evn) => {
-        console.log(`found :: ${this?.props?.deck?.authorProfileUrl}`)
         window.location.href = this?.props?.deck?.authorProfileUrl;
       }
 
       handleDeckLinkPress = (evn) => {
-        console.log(`found :: ${this?.props?.deck?.url}`)
         window.location.href = this?.props?.deck?.url;
       }
 
@@ -46,18 +46,22 @@ export class Preview extends React.Component {
         const author = this?.props?.deck?.author;
         const commanders = this?.props?.deck?.commanders?.toString().replace(`,`, `\n`);
 
-        console.log(`TITLE ${JSON.stringify(this?.props?.deck)}`)
-
         return (
             <DialogContainer type='modal' isDismissable onDismiss={this?.props?.onDismiss}>
                 {/* <Dialog 
                     width="480px"> */}
                     <div className='PreviewContainer' width="100%">
-                        <Flex direction="column" width="size-4000">
-                            <ActionButton 
-                                type="reset"
-                                alignSelf="flex-end"
-                                onPress={this?.props?.onDismiss}><Close /></ActionButton>
+                        <Flex direction="column" width="size-4000" margin="10px">
+                            <Flex direction="row" gap="size-100" width="100%" justifyContent="right">
+                                <ActionButton 
+                                    type="reset"
+                                    alignSelf="flex-end"
+                                    onPress={this?.props?.onRefresh}><Refresh /></ActionButton>
+                                <ActionButton 
+                                    type="reset"
+                                    alignSelf="flex-end"
+                                    onPress={this?.props?.onDismiss}><Close /></ActionButton>
+                            </Flex>
                             <Flex direction="row" gap="size-130" marginTop="10px">
                                 <Flex direction="column">
                                     <img src={avatarUrl} width="100" alt="avatar" />
