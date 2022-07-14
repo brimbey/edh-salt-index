@@ -1,19 +1,28 @@
 import { connect } from 'react-redux';
 import { MainView } from './MainView';
 import { fetchAll } from '../../data/redux/slices/leaderboardSlice';
-import { importDeckList } from '../../data/redux/slices/importSlice';
+import { importDeckList, importPercentageDone, isImporting } from '../../data/redux/slices/importSlice';
+import { isPreviewShowing } from '../../data/redux/slices/previewSlice';
+
 
 const mapStateToProps = (state) => {
-  const { byIds, allIds } = state.todos || {};
-  const todos = allIds && allIds.length
-    ? allIds.map((id) => (byIds ? { ...byIds[id], id } : null))
-    : null;
-  return { todos };
+    const props = {};
+
+    try {
+        props.isImporting = isImporting(state);
+        props.importPercentageDone = importPercentageDone(state);
+        props.showPreview = isPreviewShowing(state);
+    } catch (error) {
+        // swallow error
+    }
+  
+
+    return props;
 };
 
 const mapDispatchToProps = (dispatch) => ({
   refreshLeaderboard() {
-    dispatch(fetchAll());
+    // dispatch(fetchAll());
   },
   importDeckList(uri) {
     dispatch(importDeckList(uri));

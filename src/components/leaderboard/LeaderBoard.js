@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {Cell, Column, Row, TableView, TableBody, TableHeader, Flex} from '@adobe/react-spectrum'
-import { selectLeaderboardList } from '../../data/redux/slices/leaderboardSlice';
+import { selectLeaderboardList, fetchAll } from '../../data/redux/slices/leaderboardSlice';
 import './LeaderBoard.css';
+import { setPreviewDeck } from '../../data/redux/slices/previewSlice';
+import {useAsyncList} from '@react-stately/data';
 
   // handleResize = (e) => {
   //   this.setState({ windowWidth: window.innerWidth });
@@ -54,13 +56,29 @@ import './LeaderBoard.css';
   });
 
 export function LeaderBoard() {
-  
   const items = useSelector(selectLeaderboardList);
-  console.log(`ITEMS ${JSON.stringify(items)}`);
+  const lastBatchLoaded = useSelector((state) => state.leaderboard.lastBatchLoaded);
+  const nextCursor = useSelector((state) => state.leaderboard.nextCursor);
+  const isFetching = useSelector((state) => state.leaderboard.isFetching);
+  const dispatch = useDispatch();
+  
 
+  const handleLeaderboardSelectionChange = (evn) => {
+      try {
+          const {currentKey} = evn;
+          const selectedDeck = items.filter((value, index) => {
+              return value.id === currentKey;
+          })?.[0];
+          
+          dispatch(setPreviewDeck(selectedDeck));
+      } catch (error) {
+          console.log(`error :: ${error}`);
+      }
+      
+  }
+  
   let columns = [
     {name: 'USER', uid: 'authorAvatarUrl', maxWidth: 25},
-    // {name: 'Deck', uid: 'title'},
     {name: 'Commander(s)', uid: 'commanders'},
   ];
 
@@ -73,6 +91,27 @@ export function LeaderBoard() {
   columns.push(
     {name: '', uid: 'salt', width: 125}
   );
+
+  let asyncList = useAsyncList({
+    async load({ signal, cursor }) {
+      if (isFetching) {
+        return;
+      } else {
+        if (nextCursor) {
+            dispatch(fetchAll(nextCursor));
+            return {
+              items: lastBatchLoaded,
+              cursor: nextCursor,
+            };
+        }
+      }
+
+      return {
+        items: lastBatchLoaded,
+        cursor: nextCursor,
+      };
+    }
+  });
 
   return (
     <Flex 
@@ -94,7 +133,7 @@ export function LeaderBoard() {
         width="100%"
         selectionMode="single" 
         selectionStyle="highlight"
-        // onSelectionChange={this?.props?.selectionHandler}
+        onSelectionChange={handleLeaderboardSelectionChange}
         // loadingState={this.props?.loadingState}
         // onLoadMore={this?.props?.onLoadMore}
       >
@@ -111,7 +150,11 @@ export function LeaderBoard() {
             </Column>
           )}
         </TableHeader>
-        <TableBody items={items}>
+        <TableBody 
+          items={asyncList.items}
+          loadingState={asyncList.loadingState}
+          onLoadMore={asyncList.loadMore}
+        >
           {item => (
             <Row>
               {columnKey => getCellRenderer(item, columnKey)}

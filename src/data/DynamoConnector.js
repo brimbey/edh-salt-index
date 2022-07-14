@@ -1,27 +1,37 @@
 export const DynamoConnector = {
-  getLeaderboard: async (callback) => {
-    const results = await (await fetch('/api/leaderboard')).json();
+  getLeaderboard: async (cursor, callback) => {
+    let fetchUri = `/api/leaderboard`;
 
-    callback(results.items);
+    if (cursor) {
+        cursor = encodeURIComponent(cursor);
+        fetchUri = `${fetchUri}?cursor=${cursor}`;
+    }
+    
+    const results = await (await fetch(fetchUri)).json();
+
+    callback(results);
   },
   importDeckList: async (url, statusCallback, doneCallback, errorCallback) => {
-        let data = await (await fetch(`/api/import?url=${url}`)).json()
-        const commanders = Object.keys(data?.deck?.commanders);
+    try {
+        let response = await (await fetch(`/api/import?url=${url}`)).json()
+        const commanders = Object.keys(response?.deck?.commanders);
         let saltTotal = 0;
-        const nodes = data.decks.cards;
-
+        const nodes = response.deck.cards;
+        
+        const cardList = [];
         const cardnameList = [];
+
         Object.keys(nodes).forEach((cardname) => {
             cardnameList.push(cardname);
         })
 
-        for (let i = 0; i < nodes.length; i++) {
+        for (let i = 0; i < cardnameList.length; i++) {
             const cardname = cardnameList[i];
-            statusCallBack({type: `card`, card: cardname, percentage: Math.floor((i / cardnameList.length) * 100)});
+            statusCallback({type: `card`, card: cardname, percentage: Math.floor((i / cardnameList.length) * 100)});
 
             let data = await (await fetch(`/api/card?card=${cardname}`)).json();
             if (data?.salt) {
-                this.cardList.push({
+                cardList.push({
                     name: cardname,
                     salt: data.salt,
                 });
@@ -30,13 +40,26 @@ export const DynamoConnector = {
             }
         }
 
-        const cardList = [];
+        const persistResponse = await (await fetch(`/api/persist`, {
+            method: "POST",
+            body: JSON.stringify({
+                url: response?.deck?.url,
+                author: response?.deck?.author?.userName,
+                authorAvatarUrl: response?.deck?.author?.profileImageUrl,
+                commanders,
+                title: response?.deck?.name,
+                salt: saltTotal,
+                source: `moxfield`,
+                authorProfileUrl: `https://www.moxfield.com/users/${response?.deck?.author?.userName}`,
+            })
+        })).json();
 
-        
-        
+        console.log(`GOT :: ${JSON.stringify(persistResponse)}`);
 
-        console.log(`SALT TOTAL ${saltTotal}`);
-
-        return saltTotal;
+        doneCallback(persistResponse);
+    } catch (error) {
+        console.log(error);
+        errorCallback(error);
+    }
   }
 };
