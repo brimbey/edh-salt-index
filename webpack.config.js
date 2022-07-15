@@ -5,7 +5,7 @@ const webpack = require('webpack');
 
 const config = {
   entry: {
-    main: ['@babel/polyfill', './src/index.js'],
+    main: ['./src/index.js'],
   },
   output: {
     path: path.join(__dirname, '/build'),
@@ -32,7 +32,7 @@ const config = {
       },
       {
         test: /\.css$/,
-        include: /node_modules/,
+        include: /node_modules\/@react-spectrum/,
         use: ['style-loader', 'css-loader'],
       },
       {

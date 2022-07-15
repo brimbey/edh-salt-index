@@ -54,9 +54,7 @@ export const DynamoConnector = {
             })
         })).json();
 
-        console.log(`GOT :: ${JSON.stringify(persistResponse)}`);
-
-        doneCallback(persistResponse);
+        doneCallback(persistResponse.data);
     } catch (error) {
         console.log(error);
         errorCallback(error);
