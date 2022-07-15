@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-export const previewSlice = createSlice({
+export const appSlice = createSlice({
   name: 'app',
   initialState: {
     windowWidth: 0,
@@ -13,9 +13,9 @@ export const previewSlice = createSlice({
 });
 
 // Actions
-export const { setWindowWidth } = previewSlice.actions;
+export const { setWindowWidth } = appSlice.actions;
 
 // Selectors
 
 
-export default app.reducer;
+export default appSlice.reducer;
