@@ -1,12 +1,14 @@
 const CryptoJS = require('crypto-js');
 
-let arc = require('@architect/functions')
+let arc = require('@architect/functions');
+const { _ } = require('core-js');
 let parseBody = arc.http.helpers.bodyParser
 
 const prettyPrintJSON = (json) => {
   console.log(`json value: \n${JSON.stringify(json, null, 4)}`);
 }
 
+const formatSalt = (value) => Math.ceil(value * 1000) / 1000;
 
 const persistDeckList = async (body) => {
   console.log(`MD5 HASH => ${CryptoJS.MD5(body?.url)}`);
@@ -31,10 +33,24 @@ const persistDeckList = async (body) => {
   try {
     let tables = await arc.tables()
     console.log(`...persisting`);
+
     prettyPrintJSON(deckData);
-    return await tables.data.put({
+    let response = await tables.data.put({
       ...deckData,
-    })
+    });
+
+    response = {
+      ...response,
+      salt: formatSalt(response?.salt),
+      data: {
+        ...response.data,
+        salt: formatSalt(response?.data?.salt),
+      }
+    }
+
+    prettyPrintJSON(`result`);
+    prettyPrintJSON(response);
+    return response;
   } catch(error) {
     // do nothing
     console.log(`UNABLE TO SET DATA : ${error}`);

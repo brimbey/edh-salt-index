@@ -6,24 +6,12 @@
   "main": "src/index.js",
   "dependencies": {
     "@adobe/react-spectrum": "^3.18.0",
-    "@architect/functions": "^5.1.0",
-    "@architect/utils": "^3.1.2",
     "@reduxjs/toolkit": "^1.8.3",
-    "autoprefixer": "^10.4.7",
-    "aws-sdk": "^2.1167.0",
-    "core-js": "^2.6.5",
     "cross-env": "^6.0.3",
-    "crypto-js": "^4.1.1",
-    "css-loader": "3.0.0",
-    "eslint-loader": "^4.0.2",
-    "node-fetch": "^2.6.7",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-full-height": "^1.2.3",
-    "react-redux": "^8.0.2",
-    "run-waterfall": "^1.1.7",
-    "webpack": "^4.24.0",
-    "webpack-cli": "^3.1.2"
+    "react-redux": "^8.0.2"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
@@ -59,6 +47,18 @@
     "tap-spec": "^5.0.0",
     "tape": "^5.5.3",
     "tiny-json-http": "^7.4.2",
-    "webpack-dev-server": "^3.1.14"
+    "webpack-dev-server": "^3.1.14",
+    "run-waterfall": "^1.1.7",
+    "webpack": "^4.24.0",
+    "webpack-cli": "^3.1.2",
+    "crypto-js": "^4.1.1",
+    "css-loader": "3.0.0",
+    "eslint-loader": "^4.0.2",
+    "node-fetch": "^2.6.7",
+    "core-js": "^2.6.5",
+    "@architect/functions": "^5.1.0",
+    "@architect/utils": "^3.1.2",
+    "autoprefixer": "^10.4.7",
+    "aws-sdk": "^2.1167.0"
   }
 }

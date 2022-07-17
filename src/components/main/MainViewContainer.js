@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { MainView } from './MainView';
-import { fetchAll } from '../../data/redux/slices/leaderboardSlice';
+import { initializeLeaderBoard } from '../../data/redux/slices/leaderboardSlice';
 import { importDeckList, importPercentageDone, isImporting } from '../../data/redux/slices/importSlice';
 import { isPreviewShowing } from '../../data/redux/slices/previewSlice';
 
@@ -22,7 +22,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => ({
   refreshLeaderboard() {
-    // dispatch(fetchAll());
+    dispatch(initializeLeaderBoard());
   },
   importDeckList(uri) {
     dispatch(importDeckList(uri));

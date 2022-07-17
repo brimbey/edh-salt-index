@@ -54,7 +54,12 @@ export const DynamoConnector = {
             })
         })).json();
 
-        doneCallback(persistResponse.data);
+        doneCallback({
+            ...persistResponse.data,
+            id: persistResponse.id,
+            key: persistResponse.id,
+            salt: persistResponse?.data?.salt,
+        });
     } catch (error) {
         console.log(error);
         errorCallback(error);

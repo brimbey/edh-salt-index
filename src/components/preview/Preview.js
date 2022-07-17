@@ -66,7 +66,7 @@ export function Preview() {
                         </Flex>
                         <Flex direction="row" gap="size-130" marginTop="10px">
                             <Flex direction="column">
-                                <img src={avatarUrl} width="100" alt="avatar" />
+                                <img src={avatarUrl || `/resources/blank-user-avatar.png`} width="100" alt="avatar" />
                                 <Text UNSAFE_className="AuthorText">{author}</Text>
                             </Flex>
                             <Flex direction="column" width="100%">

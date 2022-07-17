@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { DynamoConnector } from '../../DynamoConnector';
-import { addNewDeckToLeaderboard } from './leaderboardSlice';
+import { addNewDeckToLeaderboard, handleUpdatedDeck } from './leaderboardSlice';
 import { setPreviewDeck } from './previewSlice';
 
 export const importSlice = createSlice({
@@ -69,6 +69,8 @@ export const doRefresh = (url) => (dispatch) => {
     (deck) => {
       dispatch(setIsRefreshing(false));
       dispatch(setRefreshingPercentage(0));
+      dispatch(handleUpdatedDeck(deck));
+      dispatch(setPreviewDeck(deck));
     }, 
     (error) => {
       dispatch(setIsRefreshing(false));

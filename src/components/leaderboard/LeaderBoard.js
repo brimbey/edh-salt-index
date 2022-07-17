@@ -1,68 +1,59 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {Cell, Column, Row, TableView, TableBody, TableHeader, Flex} from '@adobe/react-spectrum'
-import { selectLeaderboardList, fetchAll } from '../../data/redux/slices/leaderboardSlice';
+import { selectLeaderboardList, setForceLoad, getLeaderboardList, setIsUpdate } from '../../data/redux/slices/leaderboardSlice';
 import './LeaderBoard.css';
 import { setPreviewDeck } from '../../data/redux/slices/previewSlice';
 import {useAsyncList} from '@react-stately/data';
 
-  // handleResize = (e) => {
-  //   this.setState({ windowWidth: window.innerWidth });
-  // };
+export const getCellRenderer = ((item, columnKey) => {
+  let content;
 
-  // componentDidMount() {
-  //   window.addEventListener("resize", this.handleResize);
-  //   this.handleResize();
-  // }
-
-  export const getCellRenderer = ((item, columnKey) => {
-    let content;
-
-    if (columnKey === "authorAvatarUrl" && item.url) {
-      const avatarUrl = item?.[columnKey] || `/resources/blank-user-avatar.png`;
-      
-      content =
-        <img src={avatarUrl} height="30px" alt={item.author}  />
-    } else if (columnKey === "commanders") {
-      content = item[columnKey]?.toString().replace(`,`, `, `);
-    } else {
-      content = item[columnKey];
-    }
+  if (columnKey === "authorAvatarUrl" && item.url) {
+    const avatarUrl = item?.[columnKey] || `/resources/blank-user-avatar.png`;
+    
+    content =
+      <img src={avatarUrl} height="30px" alt={item.author}  />
+  } else if (columnKey === "commanders") {
+    content = item[columnKey]?.toString().replace(`,`, `, `);
+  } else {
+    content = item[columnKey];
+  }
 
 
-    return (
-      <Cell>{content}</Cell>
-    );
-  });
+  return (
+    <Cell>{content}</Cell>
+  );
+});
 
-  export const getColumnRenderer = ((item) => {
-    let content;
+export const getColumnRenderer = ((item) => {
+  let content;
 
-    if (item.uid === "salt") {
-      content =
-        <Flex direction="row">
-          Salt&nbsp;&nbsp;
-          <img src="/resources/salt-shaker.png" height="25px" alt="Salt Score"  />
-        </Flex>
-    } else {
-      content = item.name;
-    }
+  if (item.uid === "salt") {
+    content =
+      <Flex direction="row">
+        Salt&nbsp;&nbsp;
+        <img src="/resources/salt-shaker.png" height="25px" alt="Salt Score"  />
+      </Flex>
+  } else {
+    content = item.name;
+  }
 
-    return (
-      <div>
-        {content}
-      </div>
-    );
-  });
+  return (
+    <div>
+      {content}
+    </div>
+  );
+});
 
 export function LeaderBoard() {
-  const items = useSelector(selectLeaderboardList);
-  const lastBatchLoaded = useSelector((state) => state.leaderboard.lastBatchLoaded);
-  const nextCursor = useSelector((state) => state.leaderboard.nextCursor);
-  const isFetching = useSelector((state) => state.leaderboard.isFetching);
   const dispatch = useDispatch();
+  const list = useSelector(getLeaderboardList);
+  const items = useSelector(selectLeaderboardList);
+  const lastBatchLoaded = useSelector((state) => state?.leaderboard?.lastBatchLoaded || []);
+  const isForceLoad = useSelector((state) => state?.leaderboard?.forceLoad);
+  const isUpdate = useSelector((state) => state?.leaderboard?.isUpdate);
   
-
   const handleLeaderboardSelectionChange = (evn) => {
       try {
           const {currentKey} = evn;
@@ -91,27 +82,24 @@ export function LeaderBoard() {
   columns.push(
     {name: '', uid: 'salt', width: 125}
   );
+  
+  const asyncList = useAsyncList(list);
 
-  let asyncList = useAsyncList({
-    async load({ signal, cursor }) {
-      if (isFetching) {
-        return;
-      } else {
-        if (nextCursor) {
-            dispatch(fetchAll(nextCursor));
-            return {
-              items: lastBatchLoaded,
-              cursor: nextCursor,
-            };
-        }
-      }
-
-      return {
-        items: lastBatchLoaded,
-        cursor: nextCursor,
-      };
+  // TODO: fix this abomination
+  if (isForceLoad) {
+    const item = lastBatchLoaded[0];
+    const cached = asyncList.getItem(item.id);
+    
+    if (!cached) {
+      asyncList.append(lastBatchLoaded[0]);
+    } else if (isUpdate) {
+      asyncList.update(item.id, item);
+      dispatch(setIsUpdate(false));
+    } else {
+      asyncList.sort();
+      dispatch(setForceLoad(false));
     }
-  });
+  };
 
   return (
     <Flex 
@@ -134,8 +122,8 @@ export function LeaderBoard() {
         selectionMode="single" 
         selectionStyle="highlight"
         onSelectionChange={handleLeaderboardSelectionChange}
-        // loadingState={this.props?.loadingState}
-        // onLoadMore={this?.props?.onLoadMore}
+        sortDescriptor={asyncList?.sortDescriptor}
+        onSortChange={asyncList?.sort}
       >
         <TableHeader columns={columns}>
           {column => (
@@ -151,9 +139,9 @@ export function LeaderBoard() {
           )}
         </TableHeader>
         <TableBody 
-          items={asyncList.items}
-          loadingState={asyncList.loadingState}
-          onLoadMore={asyncList.loadMore}
+          items={asyncList?.items || []}
+          loadingState={asyncList?.loadingState}
+          onLoadMore={asyncList?.loadMore}
         >
           {item => (
             <Row>
