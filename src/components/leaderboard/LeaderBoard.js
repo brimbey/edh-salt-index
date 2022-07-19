@@ -13,7 +13,12 @@ export const getCellRenderer = ((item, columnKey) => {
     const avatarUrl = item?.[columnKey] || `/resources/blank-user-avatar.png`;
     
     content =
-      <img src={avatarUrl} height="30px" alt={item.author}  />
+      <img 
+        src={avatarUrl} 
+        height="26px"
+        alt={item.author} 
+        className="AvatarCell"  
+      />
   } else if (columnKey === "commanders") {
     content = item[columnKey]?.toString().replace(`,`, `, `);
   } else {
@@ -22,7 +27,7 @@ export const getCellRenderer = ((item, columnKey) => {
 
 
   return (
-    <Cell>{content}</Cell>
+    <Cell className="AvatarCell" >{content}</Cell>
   );
 });
 
@@ -53,6 +58,7 @@ export function LeaderBoard() {
   const lastBatchLoaded = useSelector((state) => state?.leaderboard?.lastBatchLoaded || []);
   const isForceLoad = useSelector((state) => state?.leaderboard?.forceLoad);
   const isUpdate = useSelector((state) => state?.leaderboard?.isUpdate);
+  const isMobile = useSelector((state) => state?.app?.isMobile);
   
   const handleLeaderboardSelectionChange = (evn) => {
       try {
@@ -73,7 +79,7 @@ export function LeaderBoard() {
     {name: 'Commander(s)', uid: 'commanders'},
   ];
 
-  if (this?.state?.windowWidth > 600) {
+  if (!isMobile) {
     columns.push(    
       {name: 'Title', uid: 'title'}
     );

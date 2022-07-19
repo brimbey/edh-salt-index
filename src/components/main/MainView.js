@@ -4,6 +4,7 @@ import { Preview } from "../preview/Preview";
 import { Flex, View, Header, Divider, Text } from "@adobe/react-spectrum";
 import { LeaderBoard } from '../leaderboard/LeaderBoard';
 import { ImportStatusBar } from '../importStatusBar/ImportStatusBar';
+import isMobile from 'ismobilejs';
 
 export class MainView extends React.Component {
     getUrlParam = () => {
@@ -17,6 +18,10 @@ export class MainView extends React.Component {
 
     componentDidMount = async () => {
         this.props.refreshLeaderboard();
+        const userAgent = window.navigator['user-agent'];
+        console.log(isMobile(userAgent).any);
+        
+        this.props.initializeApp(isMobile(userAgent).any);
     }
 
     render() {
@@ -50,14 +55,14 @@ export class MainView extends React.Component {
                             : <div style={{height: "0px"}} />
                         }
                         <LeaderBoard selectionHandler={this.handleLeaderboardSelectionChange}  />
+                        <div style={{height: "25px"}} />
+                        <View width="100%">
+                            <Divider size="M" width="100%" />
+                            <Header>
+                                <Text size="L">Total salt miners: </Text>
+                            </Header>
+                        </View>
                     </Flex>
-                </View>
-                <div style={{height: "25px"}} />
-                <View style={{position: 'absolute', bottom: -100}}>
-                    <Divider size="M" />
-                    <Header>
-                        <Text size="L">Total salt miners: </Text>
-                    </Header>
                 </View>
             </View>
         )

@@ -4,16 +4,21 @@ export const appSlice = createSlice({
   name: 'app',
   initialState: {
     windowWidth: 0,
+    isMobile: false,
   },
   reducers: {
     setWindowWidth: (state, action) => {
       state.windowWidth = action.payload;
+    },
+    setIsMobile: (state, action) => {
+      console.log(`setting is mobile :: ${action.payload}`);
+      state.isMobile = action.payload;
     }
   },
 });
 
 // Actions
-export const { setWindowWidth } = appSlice.actions;
+export const { setWindowWidth, setIsMobile } = appSlice.actions;
 
 // Selectors
 

@@ -18,11 +18,11 @@ export function Preview() {
     const dispatch = useDispatch();
 
     const handleAuthorLinkPress = (evn) => {
-        window.location.href = deck.authorProfileUrl;
+        window.open(deck.authorProfileUrl, `_blank`);
       }
 
     const handleDeckLinkPress = (evn) => {
-        window.location.href = deck.url;
+        window.open(deck.url, `_blank`);
       }
 
     const getSaltRating = (val) => {
